@@ -16,80 +16,71 @@
 #include <CGAL/Weights/cotangent_weights.h>
 #include <CGAL/boost/graph/iterator.h>
 
-
 #include "ui_utils.h"
 #include "io.h"
 
+#include <glm/glm.hpp>
 
-int main(int, char**)
-{
-    // Setup window
-    //glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
+namespace lyq{
+    GLFWwindow* create_glfw_window(){
+        // Decide GL+GLSL versions
+        #if defined(IMGUI_IMPL_OPENGL_ES2)
+                // GL ES 2.0 + GLSL 100
+            const char* glsl_version = "#version 100";
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+        #elif defined(__APPLE__)
+                // GL 3.2 + GLSL 150
+            const char* glsl_version = "#version 150";
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+        #else
+                // GL 3.0 + GLSL 130
+                const char* glsl_version = "#version 130";
+                glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+                glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+                //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+                //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+        #endif
 
-    // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-    // GL ES 2.0 + GLSL 100
-    const char* glsl_version = "#version 100";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-#elif defined(__APPLE__)
-    // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-#else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
-#endif
+        GLFWwindow* window = glfwCreateWindow(1280, 720, "MyMeshLab", NULL, NULL);
+        if (window == NULL){
+            std::cout << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+        }
+        glfwMakeContextCurrent(window);
+        glfwSwapInterval(1); // Enable vsync
 
-    // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "MyMeshLab", NULL, NULL);
-    if (window == NULL)
-        return 1;
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
+        // Setup Dear ImGui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+        //ImGui::StyleColorsClassic();
 
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
+        // Setup Platform/Renderer backends
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+        return window;
+    }
 
-
-    // Our state
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    bool selected_model=false;
-    TCHAR *szFileName;
-    CGAL::Polyhedron_3<CGAL::Epick> polyhedron;
-    // Main loop
-    while (!glfwWindowShouldClose(window))
-    {
-        glfwPollEvents();
+    bool selected_model = false;//标记是否打开模型
+    TCHAR *szFileName;//Mesh File
+    void render_imgui(bool &show_demo_window, bool &show_another_window, ImVec4 clear_color){
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 
         ImGui::ShowDemoWindow(&show_demo_window);
@@ -114,9 +105,9 @@ int main(int, char**)
             if (ImGui::Button("Open File"))
             {
                 szFileName = open_file_dialog();
-                selected_model = true;
-                _tprintf("selected: %s\n", szFileName);
 
+                _tprintf("selected: %s\n", szFileName);
+                selected_model = true;
                 std::vector<double> V, P; // V: 3*vn, P: 4*pn.
                 std::vector<size_t> M; // M: 3*fn.
                 read_mesh(szFileName, V, M);
@@ -142,6 +133,29 @@ int main(int, char**)
                 show_another_window = false;
             ImGui::End();
         }
+    }
+}
+int main(int, char**)
+{
+    // Setup window
+    //glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit())
+        return 1;
+
+    // Create window with graphics context
+    GLFWwindow* window = lyq::create_glfw_window();
+
+    // Our state
+    bool show_demo_window = true;
+    bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    // Main loop
+    while (!glfwWindowShouldClose(window))
+    {
+        glfwPollEvents();
+
+        lyq::render_imgui(show_demo_window, show_another_window, clear_color);
 
         // Rendering
         ImGui::Render();

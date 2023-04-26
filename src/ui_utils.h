@@ -26,6 +26,7 @@ TCHAR *open_file_dialog();
 
 #include <fstream>
 #include <iostream>
+#include <vector>
 #include <CGAL/IO/Polyhedron_iostream.h>
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>

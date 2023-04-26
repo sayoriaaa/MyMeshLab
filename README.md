@@ -22,8 +22,24 @@ xmake run MyLab
 
 
 
+Tips：
+
+在编写代码时，为了能代码补全相关的库函数，运行
+
+```
+xmake project -k compile_commands
+```
+
+然后右键该`compile_commands.json`文件选择`load ...`，就会像python一样导包了，享受到和之前一样的代码提示、自动补全，好耶！！
+
+
+
 参考相关项目
 
-基于xmake的创建imgui示例页面 
+基于xmake的创建imgui示例页面 [xmake-examples/imgui-scaffold: A minimal imgui project template (github.com)](https://github.com/xmake-examples/imgui-scaffold)
 
-读取obj文件 
+读取obj文件 [xianzhongfang/topocut: Open source code for SIGGRAPH 2022 journal paper TopoCut. (github.com)](https://github.com/xianzhongfang/topocut)
+
+参考资料
+
+[OPENFILENAMEW (commdlg.h) - Win32 apps | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/win32/api/commdlg/ns-commdlg-openfilenamew)
