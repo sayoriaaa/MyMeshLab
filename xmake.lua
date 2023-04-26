@@ -5,6 +5,8 @@ add_requires("cgal")
 target("MyLab")
     set_kind("binary")
     add_files("src/*.cpp") --例如"src/*.cpp|ui_utils.cpp|ui_utils.h" |后面表示ignore
+    --add_headerfiles("src/*.h")
+    --add_headerfiles("src/shader/*.h")
     --add_requires("eigen", {system = true})
     --add_requires("cgal", {system = true})
     --add_requires("matplotplusplus", {system = true})

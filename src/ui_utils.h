@@ -22,9 +22,12 @@ TCHAR *open_file_dialog();
 #include <GLES2/gl2.h>
 #endif
 #undef GLFW_INCLUDE_NONE
+
+#include <glad/glad.h>
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <vector>
 #include <CGAL/IO/Polyhedron_iostream.h>

@@ -34,6 +34,25 @@ xmake project -k compile_commands
 
 
 
+项目进度：
+
+2023/4/24
+
+- 实现基于xmake的基本imgui页面搭建
+- 实现obj文件的读入
+
+2023/4/26 
+
+- 完成基础渲染管线搭建
+
+- 实现小demo （扩展自[你好，三角形 - LearnOpenGL CN (learnopengl-cn.github.io)](https://learnopengl-cn.github.io/01 Getting started/04 Hello Triangle/)）
+
+![1](imgs/1.JPG)
+
+
+
+
+
 参考相关项目
 
 基于xmake的创建imgui示例页面 [xmake-examples/imgui-scaffold: A minimal imgui project template (github.com)](https://github.com/xmake-examples/imgui-scaffold)
