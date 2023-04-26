@@ -15,3 +15,4 @@ target("MyLab")
     add_packages("cgal", "eigen")
     --add_packages("libigl")
     add_links("User32", "Comdlg32") --为了实现调用win32的打开文件
+    add_defines("MYMACRO=hello")

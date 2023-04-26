@@ -36,12 +36,12 @@ xmake project -k compile_commands
 
 项目进度：
 
-2023/4/24
+2023/4/24 [sayoriaaa/MyMeshLab at c36ce5c392f10a6a080b4f8395080a099da6b43d (github.com)](https://github.com/sayoriaaa/MyMeshLab/tree/c36ce5c392f10a6a080b4f8395080a099da6b43d)
 
 - 实现基于xmake的基本imgui页面搭建
 - 实现obj文件的读入
 
-2023/4/26 
+2023/4/26 [sayoriaaa/MyMeshLab at 725626e3f2440f9906ed985daedaafe8288015b3 (github.com)](https://github.com/sayoriaaa/MyMeshLab/tree/725626e3f2440f9906ed985daedaafe8288015b3)
 
 - 完成基础渲染管线搭建
 
