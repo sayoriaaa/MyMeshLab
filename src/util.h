@@ -1,11 +1,18 @@
 //
 // Created by sayori on 2023/4/24.
 //
-#include "ui_utils.h"
-#include <windows.h>
-#include <string.h>
-#include <string>
 
+#ifndef MYMESHLAB_UI_UTILS_H
+#define MYMESHLAB_UI_UTILS_H
+
+#include "header.h"
+
+//--------------------
+// file read for windows
+#ifdef _WIN32
+#include <Windows.h>
+#include <tchar.h>
+#include "commdlg.h"
 #define MAX_PATH 260
 TCHAR* open_file_dialog()
 {
@@ -30,4 +37,9 @@ TCHAR* open_file_dialog()
         return szFile;
     }
 }
+#endif
 
+//--------------------
+//TO DO: FILE READ FOR LINUX
+
+#endif //MYMESHLAB_UI_UTILS_H

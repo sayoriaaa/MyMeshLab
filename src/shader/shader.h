@@ -4,7 +4,8 @@
 
 #ifndef MYMESHLAB_SHADER_H
 #define MYMESHLAB_SHADER_H
-#include "ui_utils.h"
+#include "glm/glm.hpp"
+#include "header.h"
 class Shader
 {
 public:
