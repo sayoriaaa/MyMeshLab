@@ -41,7 +41,7 @@ xmake project -k compile_commands
 - 实现基于xmake的基本imgui页面搭建
 - 实现obj文件的读入
 
-2023/4/26 [sayoriaaa/MyMeshLab at 725626e3f2440f9906ed985daedaafe8288015b3 (github.com)](https://github.com/sayoriaaa/MyMeshLab/tree/725626e3f2440f9906ed985daedaafe8288015b3)
+2023/4/26
 
 - 完成基础渲染管线搭建
 
@@ -49,7 +49,9 @@ xmake project -k compile_commands
 
 ![1](imgs/1.JPG)
 
+内嵌shader版 [sayoriaaa/MyMeshLab at 725626e3f2440f9906ed985daedaafe8288015b3 (github.com)](https://github.com/sayoriaaa/MyMeshLab/tree/725626e3f2440f9906ed985daedaafe8288015b3)
 
+clean code版 [sayoriaaa/MyMeshLab at c427a15ab01346a0c5a501577f10ea56b09cda7f (github.com)](https://github.com/sayoriaaa/MyMeshLab/tree/c427a15ab01346a0c5a501577f10ea56b09cda7f)
 
 
 
