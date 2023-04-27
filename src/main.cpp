@@ -7,7 +7,19 @@
 #include <glm/glm.hpp>
 #include "shader/shader.h"
 
+//lyq空间负责主窗口的创建、imgui的绘制及imgui上相关设置变量的访问
  namespace lyq{
+    //imgui页面的一些设置变量
+
+    bool* show_demo_window = new bool(true);
+    bool* show_another_window = new bool(false);
+
+
+    ImVec4 *clear_color = new ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImVec4 *vcolor1 = new ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImVec4 *vcolor2 = new ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImVec4 *vcolor3 = new ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
     GLFWwindow* create_glfw_window(){
         // Decide GL+GLSL versions
         #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -55,40 +67,45 @@
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init(glsl_version);
 
+        if (window == NULL)
+        {
+            std::cout << "Failed to create GLFW window" << std::endl;
+        }
+        // glad: load all OpenGL function pointers
+        // ---------------------------------------
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        {
+            std::cout << "Failed to initialize GLAD" << std::endl;
+        }
         return window;
     }
 
     bool selected_model = false;//标记是否打开模型
     TCHAR *szFileName;//Mesh File
-    void render_imgui(bool &show_demo_window, bool &show_another_window, ImVec4 &clear_color, ImVec4 &vcolor1, ImVec4 &vcolor2, ImVec4 &vcolor3){//你懂的，得是实参，所以参数必须全部是引用
 
-        // Start the Dear ImGui frame
+    void render_imgui(){
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-
-        ImGui::ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        ImGui::ShowDemoWindow(show_demo_window);
         {
             static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::Begin("Settings");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Settings");
 
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
+            ImGui::Text("This is some useful text.");
+            ImGui::Checkbox("Demo Window", show_demo_window);
+            ImGui::Checkbox("Another Window", show_another_window);
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("background color", (float*)&clear_color); // Edit 3 floats representing a color
-            ImGui::ColorEdit3("vertex color 1", (float*)&vcolor1); // Edit 3 floats representing a color
-            ImGui::ColorEdit3("vertex color 2", (float*)&vcolor2); // Edit 3 floats representing a color
-            ImGui::ColorEdit3("vertex color 3", (float*)&vcolor3); // Edit 3 floats representing a color
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+            ImGui::ColorEdit3("background color", (float*)clear_color);
+            ImGui::ColorEdit3("vertex color 1", (float*)vcolor1);
+            ImGui::ColorEdit3("vertex color 2", (float*)vcolor2);
+            ImGui::ColorEdit3("vertex color 3", (float*)vcolor3);
 
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            if (ImGui::Button("Button"))
                 counter++;
 
             if (ImGui::Button("Open File"))
@@ -105,21 +122,16 @@
             if(selected_model){
                 ImGui::Text("Selected file: %s\n", szFileName);
             }
-
-            //ImGui::SameLine();
-            //ImGui::Text("counter = %d", counter);
-
-            //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
 
         // 3. Show another simple window.
         if (show_another_window)
         {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Begin("Another Window", show_another_window);
             ImGui::Text("Hello from another window!");
             if (ImGui::Button("Close Me"))
-                show_another_window = false;
+                *show_another_window = false;
             ImGui::End();
         }
         // Rendering
@@ -138,39 +150,16 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 int main(int argc, char** argv)
 {
-
-    // Setup window
-    //glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
 
     // Create window with graphics context
     GLFWwindow* window = lyq::create_glfw_window();
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
+
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
-
-    // Our state
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    ImVec4 vcolor1 = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    ImVec4 vcolor2 = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    ImVec4 vcolor3 = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
+    //编译shader
     //气死我啦，这里一定得传绝对地址，而且xmake也没能用预定义宏把projdir传进来，暂时只能在前面手动设一下
     std::string vdir = "src/shader/shader.vs";
     std::string fdir = "src/shader/shader.fs";
@@ -179,7 +168,6 @@ int main(int argc, char** argv)
     Shader ourShader(vdir.c_str(), fdir.c_str());
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
-
     float vertices[] = {
             // 位置              // 颜色
             0.5f, 0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // 右上角
@@ -196,30 +184,24 @@ int main(int argc, char** argv)
             0, 1, 3, // 第一个三角形
             1, 2, 3  // 第二个三角形
     };
-
     unsigned int VBO, VAO, EBO;
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
-        lyq::render_imgui(show_demo_window, show_another_window, clear_color, vcolor1, vcolor2, vcolor3);
-        vertices[3] = vcolor1.x * vcolor1.w;
-        vertices[4] = vcolor1.y * vcolor1.w;
-        vertices[5] = vcolor1.z * vcolor1.w;
 
-        vertices[9] = vcolor2.x * vcolor2.w;
-        vertices[10] = vcolor2.y * vcolor2.w;
-        vertices[11] = vcolor2.z * vcolor2.w;
+        lyq::render_imgui();
+        vertices[3] = lyq::vcolor1->x * lyq::vcolor1->w;
+        vertices[4] = lyq::vcolor1->y * lyq::vcolor1->w;
+        vertices[5] = lyq::vcolor1->z * lyq::vcolor1->w;
 
-        vertices[15] = vcolor3.x * vcolor3.w;
-        vertices[16] = vcolor3.y * vcolor3.w;
-        vertices[17] = vcolor3.z * vcolor3.w;
+        vertices[9] = lyq::vcolor2->x * lyq::vcolor2->w;
+        vertices[10] = lyq::vcolor2->y * lyq::vcolor2->w;
+        vertices[11] = lyq::vcolor2->z * lyq::vcolor2->w;
 
+        vertices[15] = lyq::vcolor3->x * lyq::vcolor3->w;
+        vertices[16] = lyq::vcolor3->y * lyq::vcolor3->w;
+        vertices[17] = lyq::vcolor3->z * lyq::vcolor3->w;
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -253,7 +235,7 @@ int main(int argc, char** argv)
         glViewport(0, 0, display_w, display_h);
 
         //background
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClearColor(lyq::clear_color->x * lyq::clear_color->w, lyq::clear_color->y * lyq::clear_color->w, lyq::clear_color->z * lyq::clear_color->w, lyq::clear_color->w);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // draw our first triangle
