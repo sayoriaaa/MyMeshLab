@@ -5,6 +5,8 @@
 #include "ui_utils.h"
 #include "io.h"
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "shader/shader.h"
 
 //lyq空间负责主窗口的创建、imgui的绘制及imgui上相关设置变量的访问
@@ -83,6 +85,14 @@
     bool selected_model = false;//标记是否打开模型
     TCHAR *szFileName;//Mesh File
 
+    float world_radians = -55.;
+    float world_vec[3] = {1., 0., 0.};
+    float world_vec2[3] = {0., 0., 0.};
+    float view_vec[3] = {0., 0., -3.};
+    float projection_near = 0.1;
+    float projection_far = 100.;
+    float projection_fov = 45.f;
+
     void render_imgui(){
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -122,6 +132,19 @@
             if(selected_model){
                 ImGui::Text("Selected file: %s\n", szFileName);
             }
+
+            ImGui::Text("Here set model, view, projection matrix");
+            ImGui::Text("Here set model matrix(local space -> world space)");
+
+            ImGui::SliderFloat3("set direction of model matrix", world_vec, 0., 1.);
+            ImGui::SliderFloat("set radians(0-360) of the given direction", &world_radians, -360, 360);
+            ImGui::SliderFloat3("set object translation", world_vec2, -5, 5);
+            ImGui::Text("Here set view matrix(world space -> view space)");
+            ImGui::SliderFloat3("set camera position(opengl: -z)", view_vec, -10., 0.);
+            ImGui::Text("Here set projection matrix(view space -> clip space)");
+            ImGui::SliderFloat("set near", &projection_near, 0, 1);
+            ImGui::SliderFloat("set far", &projection_far, 0, 100);
+            ImGui::SliderFloat("set fov", &projection_fov, 0, 180);
             ImGui::End();
         }
 
@@ -240,6 +263,24 @@ int main(int argc, char** argv)
 
         // draw our first triangle
         ourShader.use();
+
+        // create transformations
+        glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        glm::mat4 view          = glm::mat4(1.0f);
+        glm::mat4 projection    = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(lyq::world_radians), glm::vec3(lyq::world_vec[0], lyq::world_vec[1], lyq::world_vec[2]));
+        model = glm::translate(model, glm::vec3(lyq::world_vec2[0], lyq::world_vec2[1], lyq::world_vec2[2]));
+        view  = glm::translate(view, glm::vec3(lyq::view_vec[0], lyq::view_vec[1], lyq::view_vec[2]));
+        projection = glm::perspective(glm::radians(lyq::projection_fov), (float)display_w / (float)display_h, lyq::projection_near, lyq::projection_far);
+        // retrieve the matrix uniform locations
+        unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
+        unsigned int viewLoc  = glGetUniformLocation(ourShader.ID, "view");
+        // pass them to the shaders (3 different ways)
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+        // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+        ourShader.setMat4("projection", projection);
+
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 3);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
