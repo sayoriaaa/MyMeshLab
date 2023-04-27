@@ -98,6 +98,7 @@
     float projection_fov = 45.f;
 
     bool set_camera_look_at_0 = false;
+    bool allow_camera_look_at_free = false;
 
     void render_imgui(){
         ImGui_ImplOpenGL3_NewFrame();
@@ -120,9 +121,6 @@
             ImGui::ColorEdit3("vertex color 1", (float*)vcolor1);
             ImGui::ColorEdit3("vertex color 2", (float*)vcolor2);
             ImGui::ColorEdit3("vertex color 3", (float*)vcolor3);
-
-            if (ImGui::Button("Button"))
-                counter++;
 
             if (ImGui::Button("Open File"))
             {
@@ -149,6 +147,11 @@
             ImGui::SliderFloat3("set camera position", camera_position, -10., 10.);
             ImGui::SliderFloat3("set camera look at position(0,0,0 or free for fps camera)", camera_lookat, -10., 10.);
             ImGui::SliderFloat3("set camera up position(0,1,0 for almost all cases)", camera_up, -10., 10.);
+            ImGui::Text("Here is two way to construct lookat matrix: keep gaze point (0,0,0) fixed or keep look direction (0,0,-1) fixed");
+            ImGui::Text("you can see find first mode in 3d reconstruction tasks like nerf dataset, and the latter one in games");
+            ImGui::Text("if you wish to control look direction freely, first activate below: ""allow set arbitrary look at direction"" and then set above camera look at matrix, or use mouse");
+            if (ImGui::Button("switch camera mode:(look at 0/fps)")) set_camera_look_at_0 = !set_camera_look_at_0;
+            if (ImGui::Button("allow set arbitrary look at direction")) allow_camera_look_at_free = !allow_camera_look_at_free;
             ImGui::Text("Here set projection matrix(view space -> clip space)");
             ImGui::SliderFloat("set near", &projection_near, 0, 1);
             ImGui::SliderFloat("set far", &projection_far, 0, 100);
@@ -169,8 +172,55 @@
         ImGui::Render();
     }
 
-
      float cameraFront[3] = {0., 0., -1.};
+     bool firstMouse = true;
+     float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+     float pitch =  0.0f;
+     float lastX =  800.0f / 2.0;
+     float lastY =  600.0 / 2.0;
+     void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+     {
+         if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) return;
+         float xpos = static_cast<float>(xposIn);
+         float ypos = static_cast<float>(yposIn);
+
+         if(firstMouse)
+         {
+             lastX = xpos;
+             lastY = ypos;
+             firstMouse = false;
+         }
+
+         float xoffset = xpos - lastX;
+         float yoffset = lastY - ypos;
+         lastX = xpos;
+         lastY = ypos;
+
+         float sensitivity = 0.05;
+         xoffset *= sensitivity;
+         yoffset *= sensitivity;
+
+         yaw   += xoffset;
+         pitch += yoffset;
+
+         if(pitch > 89.0f)
+             pitch = 89.0f;
+         if(pitch < -89.0f)
+             pitch = -89.0f;
+
+         glm::vec3 front;
+         front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+         front.y = sin(glm::radians(pitch));
+         front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+         auto temp = glm::normalize(front);
+         cameraFront[0] = temp[0];
+         cameraFront[1] = temp[1];
+         cameraFront[2] = temp[2];
+
+
+     }
+
+
      void processInput(GLFWwindow *window)
      {
          float cameraSpeed = 0.05f; // adjust accordingly
@@ -196,8 +246,13 @@
              camera_position[1] += temp.y;
              camera_position[2] += temp.z;
          }
+         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+             //glfwSetCursorPosCallback(window, lyq::mouse_callback);
+         }
 
      }
+
+
 }
 
 std::string projdir = "D:/Manage-my-github/MyMeshLab/";
@@ -219,6 +274,7 @@ int main(int argc, char** argv)
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
 
     //编译shader
     //气死我啦，这里一定得传绝对地址，而且xmake也没能用预定义宏把projdir传进来，暂时只能在前面手动设一下
@@ -252,6 +308,7 @@ int main(int argc, char** argv)
     {
 
         lyq::render_imgui();
+
         vertices[3] = lyq::vcolor1->x * lyq::vcolor1->w;
         vertices[4] = lyq::vcolor1->y * lyq::vcolor1->w;
         vertices[5] = lyq::vcolor1->z * lyq::vcolor1->w;
@@ -308,12 +365,29 @@ int main(int argc, char** argv)
         model = glm::rotate(model, glm::radians(lyq::world_radians), glm::vec3(lyq::world_vec[0], lyq::world_vec[1], lyq::world_vec[2]));
         model = glm::translate(model, glm::vec3(lyq::world_vec2[0], lyq::world_vec2[1], lyq::world_vec2[2]));
 
-
-        if(lyq::set_camera_look_at_0 == false) {//for fps camera
+        if(lyq::allow_camera_look_at_free){
+            /*
             lyq::camera_lookat[0] = lyq::camera_position[0] + lyq::cameraFront[0];
             lyq::camera_lookat[1] = lyq::camera_position[1] + lyq::cameraFront[1];
             lyq::camera_lookat[2] = lyq::camera_position[2] + lyq::cameraFront[2];
+             */
         }
+        else{
+            if(lyq::set_camera_look_at_0 == false) {//for fps camera
+                lyq::cameraFront[0] = 0.;
+                lyq::cameraFront[1] = 0.;
+                lyq::cameraFront[2] = -1.;
+                lyq::camera_lookat[0] = lyq::camera_position[0] + lyq::cameraFront[0];
+                lyq::camera_lookat[1] = lyq::camera_position[1] + lyq::cameraFront[1];
+                lyq::camera_lookat[2] = lyq::camera_position[2] + lyq::cameraFront[2];
+            }
+            else{
+                lyq::camera_lookat[0] = 0.;
+                lyq::camera_lookat[1] = 0.;
+                lyq::camera_lookat[2] = 0.;
+            }
+        }
+
 
         glm::mat4 view = glm::lookAt(glm::vec3(lyq::camera_position[0], lyq::camera_position[1], lyq::camera_position[2]),
                            glm::vec3(lyq::camera_lookat[0], lyq::camera_lookat[1], lyq::camera_lookat[2]),
@@ -337,6 +411,7 @@ int main(int argc, char** argv)
         glfwSwapBuffers(window);
         glfwPollEvents();
         lyq::processInput(window);
+
     }
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------

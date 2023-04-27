@@ -55,7 +55,7 @@ clean code版 [sayoriaaa/MyMeshLab at c427a15ab01346a0c5a501577f10ea56b09cda7f (
 
 四边形版 [sayoriaaa/MyMeshLab at 955046e63e624f748f56050fd510aa5d5c704011 (github.com)](https://github.com/sayoriaaa/MyMeshLab/tree/955046e63e624f748f56050fd510aa5d5c704011)
 
-
+由于opengl的鼠标操作会和imgui冲突，所以鼠标控制camera view舍弃，仅由imgui面板控制
 
 
 
