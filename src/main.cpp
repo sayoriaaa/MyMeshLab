@@ -88,10 +88,16 @@
     float world_radians = -55.;
     float world_vec[3] = {1., 0., 0.};
     float world_vec2[3] = {0., 0., 0.};
-    float view_vec[3] = {0., 0., -3.};
+
+    float camera_position[3] = {0., 0., 3.};
+    float camera_lookat[3] = {0., 0., 0.};
+    float camera_up[3] = {0., 1., 0.};
+
     float projection_near = 0.1;
     float projection_far = 100.;
     float projection_fov = 45.f;
+
+    bool set_camera_look_at_0 = false;
 
     void render_imgui(){
         ImGui_ImplOpenGL3_NewFrame();
@@ -140,7 +146,9 @@
             ImGui::SliderFloat("set radians(0-360) of the given direction", &world_radians, -360, 360);
             ImGui::SliderFloat3("set object translation", world_vec2, -5, 5);
             ImGui::Text("Here set view matrix(world space -> view space)");
-            ImGui::SliderFloat3("set camera position(opengl: -z)", view_vec, -10., 0.);
+            ImGui::SliderFloat3("set camera position", camera_position, -10., 10.);
+            ImGui::SliderFloat3("set camera look at position(0,0,0 or free for fps camera)", camera_lookat, -10., 10.);
+            ImGui::SliderFloat3("set camera up position(0,1,0 for almost all cases)", camera_up, -10., 10.);
             ImGui::Text("Here set projection matrix(view space -> clip space)");
             ImGui::SliderFloat("set near", &projection_near, 0, 1);
             ImGui::SliderFloat("set far", &projection_far, 0, 100);
@@ -160,6 +168,36 @@
         // Rendering
         ImGui::Render();
     }
+
+
+     float cameraFront[3] = {0., 0., -1.};
+     void processInput(GLFWwindow *window)
+     {
+         float cameraSpeed = 0.05f; // adjust accordingly
+         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+             camera_position[0] += cameraSpeed * cameraFront[0];
+             camera_position[1] += cameraSpeed * cameraFront[1];
+             camera_position[2] += cameraSpeed * cameraFront[2];
+         }
+         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+             camera_position[0] -= cameraSpeed * cameraFront[0];
+             camera_position[1] -= cameraSpeed * cameraFront[1];
+             camera_position[2] -= cameraSpeed * cameraFront[2];
+         }
+         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+             auto temp = glm::normalize(glm::cross(glm::vec3(cameraFront[0], cameraFront[1], cameraFront[2]), glm::vec3(camera_up[0], camera_up[1], camera_up[2]))) * cameraSpeed;
+             camera_position[0] -= temp.x;
+             camera_position[1] -= temp.y;
+             camera_position[2] -= temp.z;
+         }
+         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+             auto temp = glm::normalize(glm::cross(glm::vec3(cameraFront[0], cameraFront[1], cameraFront[2]), glm::vec3(camera_up[0], camera_up[1], camera_up[2]))) * cameraSpeed;
+             camera_position[0] += temp.x;
+             camera_position[1] += temp.y;
+             camera_position[2] += temp.z;
+         }
+
+     }
 }
 
 std::string projdir = "D:/Manage-my-github/MyMeshLab/";
@@ -266,11 +304,21 @@ int main(int argc, char** argv)
 
         // create transformations
         glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        glm::mat4 view          = glm::mat4(1.0f);
         glm::mat4 projection    = glm::mat4(1.0f);
         model = glm::rotate(model, glm::radians(lyq::world_radians), glm::vec3(lyq::world_vec[0], lyq::world_vec[1], lyq::world_vec[2]));
         model = glm::translate(model, glm::vec3(lyq::world_vec2[0], lyq::world_vec2[1], lyq::world_vec2[2]));
-        view  = glm::translate(view, glm::vec3(lyq::view_vec[0], lyq::view_vec[1], lyq::view_vec[2]));
+
+
+        if(lyq::set_camera_look_at_0 == false) {//for fps camera
+            lyq::camera_lookat[0] = lyq::camera_position[0] + lyq::cameraFront[0];
+            lyq::camera_lookat[1] = lyq::camera_position[1] + lyq::cameraFront[1];
+            lyq::camera_lookat[2] = lyq::camera_position[2] + lyq::cameraFront[2];
+        }
+
+        glm::mat4 view = glm::lookAt(glm::vec3(lyq::camera_position[0], lyq::camera_position[1], lyq::camera_position[2]),
+                           glm::vec3(lyq::camera_lookat[0], lyq::camera_lookat[1], lyq::camera_lookat[2]),
+                           glm::vec3(lyq::camera_up[0], lyq::camera_up[1], lyq::camera_up[2]));
+
         projection = glm::perspective(glm::radians(lyq::projection_fov), (float)display_w / (float)display_h, lyq::projection_near, lyq::projection_far);
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
@@ -288,6 +336,7 @@ int main(int argc, char** argv)
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
+        lyq::processInput(window);
     }
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
