@@ -14,12 +14,7 @@
 
 std::string projdir = "D:/Manage-my-github/MyMeshLab/";
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
+
 
 int main(int argc, char** argv)
 {
@@ -28,21 +23,10 @@ int main(int argc, char** argv)
 
     // Create window with graphics context
     GLFWwindow* window = front::quad::create_glfw_window();
-
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    front::init();
 
 
-    //编译shader
-    //气死我啦，这里一定得传绝对地址，而且xmake也没能用预定义宏把projdir传进来，暂时只能在前面手动设一下
-    std::string vdir = "src/shader/shader.vs";
-    std::string fdir = "src/shader/shader.fs";
-    vdir = projdir+vdir;
-    fdir = projdir+fdir;
-    Shader ourShader(vdir.c_str(), fdir.c_str());
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-
+    Shader ourShader = demo::quad::compile_shader(projdir);
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -51,10 +35,8 @@ int main(int argc, char** argv)
         front::quad::render_imgui();
         demo::quad::buff_shader();
 
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        cam::get_display_w_h(display_w, display_h);// pass it to camera namespace
+        front::get_display_w_h();
+        cam::camera_get_w_h(front::display_w, front::display_h);
 
         demo::quad::draw_background();
 
@@ -78,10 +60,6 @@ int main(int argc, char** argv)
     }
     demo::quad::release_buff();
     front::clean_up();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
-
     return 0;
 }
 

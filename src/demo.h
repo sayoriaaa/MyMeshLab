@@ -33,6 +33,17 @@ namespace demo{
         };
         unsigned int VBO, VAO, EBO;
 
+        Shader compile_shader(std::string projdir){
+            //编译shader
+            //气死我啦，这里一定得传绝对地址，而且xmake也没能用预定义宏把projdir传进来，暂时只能在前面手动设一下
+            std::string vdir = "src/shader/quad_demo/shader.vs";
+            std::string fdir = "src/shader/quad_demo/shader.fs";
+            vdir = projdir+vdir;
+            fdir = projdir+fdir;
+            auto ret = new Shader(vdir.c_str(), fdir.c_str());
+            return *ret;
+        }
+
         void buff_shader(){
             vertices[3] = front::quad::vcolor1->x * front::quad::vcolor1->w;
             vertices[4] = front::quad::vcolor1->y * front::quad::vcolor1->w;

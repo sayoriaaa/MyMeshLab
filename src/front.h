@@ -9,7 +9,25 @@
 #include "util.h"
 //front空间负责主窗口的创建、imgui的绘制及imgui上相关设置变量的访问
 namespace front{
+    GLFWwindow* window;
+    int display_w, display_h;
 
+    void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+    {
+        // make sure the viewport matches the new window dimensions; note that width and
+        // height will be significantly larger than specified on retina displays.
+        glViewport(0, 0, width, height);
+    }
+
+    void init(){
+        glfwMakeContextCurrent(window);
+        glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    }
+
+    void get_display_w_h(){
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+    }
     namespace quad {
         //imgui页面的一些设置变量
 
@@ -46,7 +64,7 @@ namespace front{
             //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-            GLFWwindow *window = glfwCreateWindow(1280, 720, "MyMeshLab", NULL, NULL);
+            window = glfwCreateWindow(1280, 720, "MyMeshLab", NULL, NULL);
             if (window == NULL) {
                 std::cout << "Failed to create GLFW window" << std::endl;
                 glfwTerminate();
@@ -181,10 +199,13 @@ namespace front{
     }
 
     void clean_up(){
-        // Cleanup
+        // Cleanup imgui
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+        //clean up window
+        glfwDestroyWindow(window);
+        glfwTerminate();
     }
 
 }

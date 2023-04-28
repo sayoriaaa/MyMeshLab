@@ -22,4 +22,5 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <string>
 #endif //MYMESHLAB_HEADER_H

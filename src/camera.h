@@ -22,8 +22,9 @@ namespace cam{
     float projection_near = 0.1;
     float projection_far = 100.;
     float projection_fov = 45.f;
-    float display_w;
-    float display_h;
+
+    int display_w;
+    int display_h;
 
     bool set_camera_look_at_0 = false;
     bool allow_camera_look_at_free = false;
@@ -82,12 +83,13 @@ namespace cam{
                            glm::vec3(camera_lookat[0], camera_lookat[1], camera_lookat[2]),
                            glm::vec3(camera_up[0], camera_up[1], camera_up[2]));
 
-        projection = glm::perspective(glm::radians(projection_fov), (float)display_w / (float)display_h, projection_near, projection_far);
+        projection = glm::perspective(glm::radians(projection_fov), (float)display_h / (float)display_h, projection_near, projection_far);
     }
 
-    void get_display_w_h(int w, int h){
-        display_h = h;
+    void camera_get_w_h(int w, int h){
         display_w = w;
+        display_h = h;
     }
+
 }
 #endif //MYMESHLAB_CAMERA_H

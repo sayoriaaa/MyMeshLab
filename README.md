@@ -59,6 +59,12 @@ clean code版 [sayoriaaa/MyMeshLab at c427a15ab01346a0c5a501577f10ea56b09cda7f (
 
 
 
+2023/4/28
+
+- 整理项目
+
+
+
 参考相关项目
 
 基于xmake的创建imgui示例页面 [xmake-examples/imgui-scaffold: A minimal imgui project template (github.com)](https://github.com/xmake-examples/imgui-scaffold)
@@ -68,3 +74,10 @@ clean code版 [sayoriaaa/MyMeshLab at c427a15ab01346a0c5a501577f10ea56b09cda7f (
 参考资料
 
 [OPENFILENAMEW (commdlg.h) - Win32 apps | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/win32/api/commdlg/ns-commdlg-openfilenamew)
+
+
+
+```
+git@github.com:sayoriaaa/MyMeshLab.git
+```
+
