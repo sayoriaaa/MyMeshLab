@@ -21,7 +21,7 @@ namespace io {
     int read_obj(
             TCHAR* file_name,
             std::vector<double>& verts,
-            std::vector<size_t>& mesh,
+            std::vector<unsigned int>& mesh,
             std::vector<size_t>& mesh_ptr)
     {
         std::cout << "# [ Start to read OBJ file ]" << std::endl;
@@ -34,7 +34,7 @@ namespace io {
         }
 
         std::vector<double>& V  = verts;
-        std::vector<size_t>& M  = mesh;
+        std::vector<unsigned int>& M  = mesh;
         std::vector<size_t>& MP = mesh_ptr;
 
         std::string str_line;
@@ -92,7 +92,7 @@ namespace io {
     int read_mesh(
             TCHAR* in_mesh,
             std::vector<double>& V,
-            std::vector<size_t>& M)
+            std::vector<unsigned int>& M)
     {
         std::vector<size_t> MP;
         return read_obj(in_mesh, V, M, MP);

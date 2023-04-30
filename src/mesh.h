@@ -18,4 +18,18 @@
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Point_3.h>
+
+#include "io.h"
+
+namespace mesh{
+    std::vector<double> vertices;
+    std::vector<unsigned int> indices;
+
+    void import_mesh(TCHAR* file_name){
+        io::read_mesh(file_name, vertices, indices);
+    }
+
+
+
+}
 #endif //MYMESHLAB_MESH_H

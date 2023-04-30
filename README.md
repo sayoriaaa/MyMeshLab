@@ -65,6 +65,33 @@ clean code版 [sayoriaaa/MyMeshLab at c427a15ab01346a0c5a501577f10ea56b09cda7f (
 
 
 
+header.h放置一些通用的头文件，随意调用不会冲突
+
+mesh.h中的命名空间`mesh`存放导入的mesh顶点、面数据；mesh相关的算法；需要`io.h`
+
+demo.h中放置不同demo调用不同shader的方式，在这里实现opengl直接相关的图像的绘制，同时需要接受来自imgui前端`front`的数据以及`mesh.h`中的模型数据，因此包含头文件
+
+- \#include "header.h"
+- \#include "front.h"
+- \#include "shader/shader.h"
+- \#include "mesh.h"
+
+front.h包含imgui界面的显示，需要util.h来帮助调用windows系统的文件管理器，打开模型文件，导入到`mesh`空间中，同时设置一些camera参数，因此包含头文件
+
+- \#include "camera.h"
+- \#include "util.h"
+- \#include "mesh.h"
+
+shader.h中仅包含shader类
+
+camera.h定义了mvp矩阵的计算（与具体的vertex shader联系）以及键盘操作对mvp矩阵的修改
+
+io.h解析三维模型文件到vertices, indices，仅被mesh.h调用
+
+
+
+
+
 参考相关项目
 
 基于xmake的创建imgui示例页面 [xmake-examples/imgui-scaffold: A minimal imgui project template (github.com)](https://github.com/xmake-examples/imgui-scaffold)

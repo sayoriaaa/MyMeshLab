@@ -9,7 +9,7 @@
 #include "header.h"
 #include "front.h"
 #include "shader/shader.h"
-
+#include "mesh.h"
 namespace demo{
     bool use_demo = false;
     int demo_index = 0;
@@ -111,5 +111,99 @@ namespace demo{
             glDeleteBuffers(1, &VBO);
         }
     }
+
+    namespace main{
+
+        unsigned int VBO, VAO, EBO;
+
+        Shader compile_shader(std::string projdir){
+            //编译shader
+            //气死我啦，这里一定得传绝对地址，而且xmake也没能用预定义宏把projdir传进来，暂时只能在前面手动设一下
+            std::string vdir = "src/shader/mesh/shader.vs";
+            std::string fdir = "src/shader/mesh/shader.fs";
+            vdir = projdir+vdir;
+            fdir = projdir+fdir;
+            auto ret = new Shader(vdir.c_str(), fdir.c_str());
+            return *ret;
+        }
+
+        void buff_shader(){
+
+            glGenVertexArrays(1, &VAO);
+            glGenBuffers(1, &VBO);
+            glGenBuffers(1, &EBO);
+            // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+            glBindVertexArray(VAO);
+
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, mesh::vertices.size()*sizeof(double), &mesh::vertices[0], GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh::indices.size()*sizeof(std::size_t), &mesh::indices[0], GL_STATIC_DRAW);
+
+
+            // 位置属性
+            glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(double), (void*)0);
+            glEnableVertexAttribArray(0);
+
+            // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+            // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+            glBindVertexArray(0);
+
+            /*
+            // 绑定VBO，将其映射到系统内存中并打印数据
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+            float* vertexData = (float*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
+
+            if (vertexData != NULL) {
+                for (int i = 0; i < mesh::vertices.size(); i+=3) {
+                    printf("Vertex %d: (%f, %f, %f)\n", i, vertexData[3*i], vertexData[3*i+1], vertexData[3*i+2]);
+                }
+
+                // 解除映射
+                glUnmapBuffer(GL_ARRAY_BUFFER);
+            }
+             */
+
+        }
+
+        void draw_background(){
+            glClearColor(front::mesh::clear_color->x * front::mesh::clear_color->w, front::mesh::clear_color->y * front::mesh::clear_color->w, front::mesh::clear_color->z * front::mesh::clear_color->w, front::mesh::clear_color->w);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+
+        void shade(Shader ourShader){
+            unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
+            unsigned int viewLoc  = glGetUniformLocation(ourShader.ID, "view");
+            unsigned int colorLoc  = glGetUniformLocation(ourShader.ID, "OurColor");
+            // pass them to the shaders (3 different ways)
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(cam::model));
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &cam::view[0][0]);
+
+            glUniform4f(colorLoc, front::mesh::mesh_color->x, front::mesh::mesh_color->y, front::mesh::mesh_color->z, front::mesh::mesh_color->w);
+            // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
+            ourShader.setMat4("projection", cam::projection);
+
+            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+            //glDrawArrays(GL_TRIANGLES, 0, mesh::vertices.size()/3);
+            glDrawElements(GL_TRIANGLES, mesh::indices.size(), GL_UNSIGNED_INT, 0);
+            //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            if(front::mesh::use_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+
+        void release_buff(){
+            // optional: de-allocate all resources once they've outlived their purpose:
+            // ------------------------------------------------------------------------
+            glDeleteVertexArrays(1, &VAO);
+            glDeleteBuffers(1, &VBO);
+            glDeleteBuffers(1, &EBO);
+        }
+    }
+
 }
 #endif //MYMESHLAB_DEMO_H
