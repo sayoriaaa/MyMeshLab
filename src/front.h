@@ -214,7 +214,7 @@ namespace front{
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-            ImGui::ShowDemoWindow(show_demo_window);
+            //ImGui::ShowDemoWindow(show_demo_window);
             {
                 ImGui::Begin("Settings");
 
@@ -224,7 +224,7 @@ namespace front{
                 if (ImGui::Button("Open File")) {
                     szFileName = open_file_dialog();
 
-                    _tprintf("selected: %s\n", szFileName);
+                    _tprintf("# [ selected file %s ]\n", szFileName);
                     selected_model = true;
                     ::mesh::import_mesh(szFileName);
                 }
@@ -260,6 +260,32 @@ namespace front{
 
                 ImGui::Text("render triangle/ wireframe");
                 ImGui::Checkbox("use wireframe", &use_wireframe);
+
+                //-----------------------------------implement algorithms-----------------------
+                if(ImGui::Button("perturb vertices")){
+                    ::mesh::perturb_mesh(::mesh::mesh_buffer[::mesh::cur_mesh]);
+                }
+
+                if(ImGui::Button("CGAL isotropic remesh")){
+                    ::mesh::cgal_isotropic_remesh(::mesh::mesh_buffer[::mesh::cur_mesh]);
+                }
+
+                //-------------unit test-----------------
+                if(ImGui::Button("run cgal test")) ::mesh::run_test_cgal(::mesh::mesh_buffer[::mesh::cur_mesh]);
+                //-------------------------------------------
+
+                if(ImGui::Button("before model")){
+                    if(::mesh::cur_mesh>0) {
+                        ::mesh::cur_mesh--;
+                        std::cout << "# [ switched to previous model " << ::mesh::cur_mesh << " ]" << std::endl;
+                    }
+                }
+                if(ImGui::Button("after model")){
+                    if(::mesh::cur_mesh<::mesh::mesh_buffer.size()-1) {
+                        ::mesh::cur_mesh++;
+                        std::cout << "# [ switched to next model " << ::mesh::cur_mesh << " ]" << std::endl;
+                    }
+                }
                 ImGui::End();
             }
             // Rendering

@@ -50,9 +50,9 @@ void run_demo_quad(){
         glfwSwapBuffers(window);
         glfwPollEvents();
         front::quad::processInput(window);
-
+        demo::quad::release_buff();
     }
-    demo::quad::release_buff();
+    //
 }
 
 void run_mesh(){
@@ -62,13 +62,14 @@ void run_mesh(){
 
     //glEnable(GL_DEPTH_TEST);// because 3D
     Shader ourShader = demo::main::compile_shader(projdir);
-
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
 
         front::mesh::render_imgui();
-        demo::main::buff_shader();
+        //std::cout << "check2" << std::endl;
+        if(front::mesh::selected_model) demo::main::buff_shader();
+        //std::cout << "check3" << std::endl;
 
         front::get_display_w_h();
         cam::camera_get_w_h(front::display_w, front::display_h);
@@ -91,9 +92,8 @@ void run_mesh(){
         glfwSwapBuffers(window);
         glfwPollEvents();
         front::mesh::processInput(window);
-
+        demo::main::release_buff();
     }
-    demo::quad::release_buff();
 }
 
 int main(int argc, char** argv)

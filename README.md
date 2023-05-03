@@ -2,7 +2,7 @@
 
 之前使用[USTC的框架](http://staff.ustc.edu.cn/~fuxm/code/index.html#sec_surface_framework)来进行Mesh相关算法的实现，但是自己想实现参数化之外的算法时，相比如GCAL、libigl等常见算法库，面临手册信息没有、调bug痛苦的问题。
 
-正好自己最近也在学习开源项目的开发，因此计划自己写一个使用opengl+imgui作为前端，利用xmake构建（超赞！！人生苦短，我选xmake）的算法框架（CGAL自带的可视化和USTC的框架一样也是Qt，我还是想自己再走一遍），然后用自己的这个来实现相关算法的学习和效果的呈现
+正好自己最近也在学习开源项目的开发，因此计划自己写一个使用opengl+imgui作为前端的算法框架（CGAL自带的可视化和USTC的框架一样也是Qt，我还是想自己再走一遍），然后用自己的这个来实现相关算法的学习和效果的呈现
 
 ![2](imgs/2.JPG)
 
@@ -61,9 +61,11 @@ io.h解析三维模型文件到vertices, indices，仅被mesh.h调用
 
 [主页 - LearnOpenGL CN (learnopengl-cn.github.io)](https://learnopengl-cn.github.io/)
 
+[The Computational Geometry Algorithms Library (cgal.org)](https://www.cgal.org/)
+
 [OPENFILENAMEW (commdlg.h) - Win32 apps | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows/win32/api/commdlg/ns-commdlg-openfilenamew)
 
-
+[CGAL 5.5.2 - Polygon Mesh Processing: User Manual](https://doc.cgal.org/latest/Polygon_mesh_processing/index.html#Chapter_PolygonMeshProcessing)
 
 ## 开发历史
 
@@ -98,6 +100,12 @@ clean code版 [sayoriaaa/MyMeshLab at c427a15ab01346a0c5a501577f10ea56b09cda7f (
 
 ![2](imgs/2.JPG)
 
+2023/5/3
+
+- 将CGAL整合入
+
+  
+
 
 
 ## Tips
@@ -109,6 +117,15 @@ xmake project -k compile_commands
 ```
 
 然后右键该`compile_commands.json`文件选择`load ...`，就会像python一样导包了，享受到和之前一样的代码提示、自动补全，好耶！！
+
+
+
+调用`glGenBuffers`会new 对象，所以在循环中使用时注意在下一次执行前delete掉
+
+## TODO
+
+- [ ] fix 打开大模型（面数1w+）时的内存错误
+- [ ] fix 应用CGAL isotropic remeshing [CGAL 5.5.2 - Polygon Mesh Processing: Meshing](https://doc.cgal.org/latest/Polygon_mesh_processing/group__PMP__meshing__grp.html#gaa5cc92275df27f0baab2472ecbc4ea3f)结果错误
 
 
 

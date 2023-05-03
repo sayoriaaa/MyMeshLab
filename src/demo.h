@@ -129,6 +129,9 @@ namespace demo{
 
         void buff_shader(){
 
+            auto vertices = mesh::mesh_buffer[mesh::cur_mesh]->vertices;
+            auto indices = mesh::mesh_buffer[mesh::cur_mesh]->indices;
+
             glGenVertexArrays(1, &VAO);
             glGenBuffers(1, &VBO);
             glGenBuffers(1, &EBO);
@@ -136,10 +139,10 @@ namespace demo{
             glBindVertexArray(VAO);
 
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferData(GL_ARRAY_BUFFER, mesh::vertices.size()*sizeof(double), &mesh::vertices[0], GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(double), &vertices[0], GL_STATIC_DRAW);
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh::indices.size()*sizeof(std::size_t), &mesh::indices[0], GL_STATIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(std::size_t), &indices[0], GL_STATIC_DRAW);
 
 
             // 位置属性
@@ -177,6 +180,11 @@ namespace demo{
         }
 
         void shade(Shader ourShader){
+
+            auto vertices = mesh::mesh_buffer[mesh::cur_mesh]->vertices;
+            auto indices = mesh::mesh_buffer[mesh::cur_mesh]->indices;
+
+
             unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
             unsigned int viewLoc  = glGetUniformLocation(ourShader.ID, "view");
             unsigned int colorLoc  = glGetUniformLocation(ourShader.ID, "OurColor");
@@ -190,7 +198,7 @@ namespace demo{
 
             glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
             //glDrawArrays(GL_TRIANGLES, 0, mesh::vertices.size()/3);
-            glDrawElements(GL_TRIANGLES, mesh::indices.size(), GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
             //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             if(front::mesh::use_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
